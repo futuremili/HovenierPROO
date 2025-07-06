@@ -1,40 +1,95 @@
 {% extends "base.html" %}
 
-{% block title %}Tasks - LandscapePro{% endblock %}
+{% block title %}Taken - HovenierPro{% endblock %}
 
 {% block content %}
 <div class="container my-4">
     <!-- Header -->
     <div class="row mb-4">
-        <div class="col-12">
+        <div class="col-md-8">
             <h2 class="fw-bold">
                 <i data-feather="check-square" class="me-2"></i>
-                My Tasks
+                Mijn Taken
             </h2>
+            <p class="text-muted">Beheer en voltooi je dagelijkse werkzaamheden</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" onclick="showAddTaskModal()">
+                <i data-feather="plus" class="me-2"></i>
+                Nieuwe Taak
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="clock" class="feature-icon mb-2 text-warning"></i>
+                <div class="stats-value text-warning">{{ tasks|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                <p class="mb-0 text-muted">Wachtend</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="play-circle" class="feature-icon mb-2 text-info"></i>
+                <div class="stats-value text-info">{{ tasks|selectattr('status', 'equalto', 'in_progress')|list|length }}</div>
+                <p class="mb-0 text-muted">Bezig</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="check-circle" class="feature-icon mb-2 text-success"></i>
+                <div class="stats-value text-success">{{ tasks|selectattr('status', 'equalto', 'completed')|list|length }}</div>
+                <p class="mb-0 text-muted">Voltooid</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="list" class="feature-icon mb-2 text-primary"></i>
+                <div class="stats-value text-primary">{{ tasks|length }}</div>
+                <p class="mb-0 text-muted">Totaal</p>
+            </div>
         </div>
     </div>
 
     <!-- Filter Tabs -->
     <div class="row mb-4">
         <div class="col-12">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link {{ 'active' if status_filter == 'all' else '' }}" 
-                       href="{{ url_for('tasks', status='all') }}">All Tasks</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ 'active' if status_filter == 'pending' else '' }}" 
-                       href="{{ url_for('tasks', status='pending') }}">Pending</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ 'active' if status_filter == 'in_progress' else '' }}" 
-                       href="{{ url_for('tasks', status='in_progress') }}">In Progress</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ 'active' if status_filter == 'completed' else '' }}" 
-                       href="{{ url_for('tasks', status='completed') }}">Completed</a>
-                </li>
-            </ul>
+            <div class="card">
+                <div class="card-body p-2">
+                    <ul class="nav nav-pills nav-fill">
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if status_filter == 'all' else '' }}" 
+                               href="{{ url_for('tasks', status='all') }}">
+                                <i data-feather="list" class="me-1"></i>
+                                Alle Taken
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if status_filter == 'pending' else '' }}" 
+                               href="{{ url_for('tasks', status='pending') }}">
+                                <i data-feather="clock" class="me-1"></i>
+                                Wachtend
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if status_filter == 'in_progress' else '' }}" 
+                               href="{{ url_for('tasks', status='in_progress') }}">
+                                <i data-feather="play-circle" class="me-1"></i>
+                                Bezig
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if status_filter == 'completed' else '' }}" 
+                               href="{{ url_for('tasks', status='completed') }}">
+                                <i data-feather="check-circle" class="me-1"></i>
+                                Voltooid
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -42,104 +97,421 @@
     <div class="row">
         <div class="col-12">
             {% if tasks %}
-                {% for task in tasks %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <h5 class="card-title mb-0 me-3">{{ task.title }}</h5>
-                                        
-                                        <!-- Priority Badge -->
-                                        {% if task.priority == 'urgent' %}
-                                            <span class="badge bg-danger">Urgent</span>
-                                        {% elif task.priority == 'high' %}
-                                            <span class="badge bg-warning">High</span>
-                                        {% elif task.priority == 'medium' %}
-                                            <span class="badge bg-info">Medium</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Low</span>
-                                        {% endif %}
-                                        
-                                        <!-- Status Badge -->
-                                        {% if task.status == 'completed' %}
-                                            <span class="badge bg-success ms-2">Completed</span>
-                                        {% elif task.status == 'in_progress' %}
-                                            <span class="badge bg-primary ms-2">In Progress</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary ms-2">Pending</span>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    {% if task.description %}
-                                        <p class="card-text">{{ task.description }}</p>
-                                    {% endif %}
-                                    
-                                    <div class="row g-2">
-                                        {% if task.location %}
-                                            <div class="col-auto">
-                                                <small class="text-muted">
-                                                    <i data-feather="map-pin" class="me-1"></i>
-                                                    {{ task.location }}
-                                                </small>
-                                            </div>
-                                        {% endif %}
-                                        
-                                        {% if task.due_date %}
-                                            <div class="col-auto">
-                                                <small class="text-muted">
-                                                    <i data-feather="calendar" class="me-1"></i>
-                                                    Due: {{ task.due_date.strftime('%m/%d/%Y') }}
-                                                </small>
-                                            </div>
-                                        {% endif %}
-                                        
-                                        {% if task.estimated_hours %}
-                                            <div class="col-auto">
-                                                <small class="text-muted">
-                                                    <i data-feather="clock" class="me-1"></i>
-                                                    Est: {{ task.estimated_hours }}h
-                                                </small>
-                                            </div>
-                                        {% endif %}
+                <div class="row g-3">
+                    {% for task in tasks %}
+                    <div class="col-lg-6 col-xl-4">
+                        <div class="task-card card priority-{{ task.priority }} border-0 h-100">
+                            <div class="card-body p-4">
+                                <!-- Priority Badge -->
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="status-badge priority-{{ task.priority }}">
+                                        {% if task.priority == 'urgent' %}🚨 Urgent
+                                        {% elif task.priority == 'high' %}🔴 Hoog
+                                        {% elif task.priority == 'medium' %}🟡 Medium
+                                        {% else %}🟢 Laag{% endif %}
+                                    </span>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i data-feather="more-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {% if task.status != 'completed' %}
+                                            <li><a class="dropdown-item" href="#" onclick="markComplete('{{ task.id }}')">
+                                                <i data-feather="check" class="me-2"></i>Voltooien
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="markInProgress('{{ task.id }}')">
+                                                <i data-feather="play" class="me-2"></i>Start Taak
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            {% endif %}
+                                            <li><a class="dropdown-item" href="#" onclick="editTask('{{ task.id }}')">
+                                                <i data-feather="edit" class="me-2"></i>Bewerken
+                                            </a></li>
+                                        </ul>
                                     </div>
                                 </div>
-                                
-                                <div class="col-md-4 text-md-end">
-                                    {% if task.status != 'completed' %}
-                                        <form method="POST" action="{{ url_for('complete_task', task_id=task.id) }}" class="d-inline">
-                                            <button type="submit" class="btn btn-success">
-                                                <i data-feather="check" class="me-1"></i>
-                                                Mark Complete
-                                            </button>
-                                        </form>
+
+                                <!-- Task Title -->
+                                <h5 class="fw-bold mb-3">{{ task.title }}</h5>
+
+                                <!-- Task Description -->
+                                <p class="text-muted mb-3">
+                                    {{ task.description[:120] }}{% if task.description|length > 120 %}...{% endif %}
+                                </p>
+
+                                <!-- Task Details -->
+                                <div class="mb-3">
+                                    {% if task.location %}
+                                    <div class="d-flex align-items-center mb-2 small">
+                                        <i data-feather="map-pin" class="me-2 text-muted" style="width: 16px; height: 16px;"></i>
+                                        <span class="text-muted">{{ task.location }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if task.due_date %}
+                                    <div class="d-flex align-items-center mb-2 small">
+                                        <i data-feather="calendar" class="me-2 text-muted" style="width: 16px; height: 16px;"></i>
+                                        <span class="text-muted">Deadline: {{ task.due_date.strftime('%d-%m-%Y') }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if task.estimated_hours %}
+                                    <div class="d-flex align-items-center small">
+                                        <i data-feather="clock" class="me-2 text-muted" style="width: 16px; height: 16px;"></i>
+                                        <span class="text-muted">Geschat: {{ task.estimated_hours }}u</span>
+                                        {% if task.actual_hours %}
+                                        <span class="text-muted ms-2">| Werkelijk: {{ task.actual_hours }}u</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    {% if task.status == 'completed' %}
+                                        <span class="badge bg-success px-3 py-2">
+                                            <i data-feather="check" class="me-1" style="width: 12px; height: 12px;"></i>
+                                            Voltooid
+                                        </span>
+                                    {% elif task.status == 'in_progress' %}
+                                        <span class="badge bg-warning px-3 py-2">
+                                            <i data-feather="play" class="me-1" style="width: 12px; height: 12px;"></i>
+                                            Bezig
+                                        </span>
                                     {% else %}
-                                        <div class="text-success">
-                                            <i data-feather="check-circle" class="me-1"></i>
-                                            <small>Completed {{ task.completed_at.strftime('%m/%d/%Y') if task.completed_at else '' }}</small>
-                                        </div>
+                                        <button class="btn btn-success btn-sm" onclick="markComplete('{{ task.id }}')">
+                                            <i data-feather="check" class="me-1" style="width: 12px; height: 12px;"></i>
+                                            Voltooien
+                                        </button>
+                                    {% endif %}
+                                    
+                                    {% if task.completed_at %}
+                                    <small class="text-muted">
+                                        Voltooid op {{ task.completed_at.strftime('%d-%m %H:%M') }}
+                                    </small>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                     </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             {% else %}
                 <div class="card">
                     <div class="card-body text-center py-5">
-                        <i data-feather="inbox" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
-                        <h5 class="text-muted">No tasks found</h5>
-                        <p class="text-muted">
+                        <i data-feather="inbox" class="feature-icon text-muted mb-3"></i>
+                        <h4 class="text-muted mb-3">Geen taken gevonden</h4>
+                        <p class="text-muted mb-4">
                             {% if status_filter == 'all' %}
-                                You don't have any tasks assigned yet.
+                                Je hebt nog geen taken. Voeg je eerste taak toe om te beginnen!
                             {% else %}
-                                No tasks with status "{{ status_filter.replace('_', ' ').title() }}"
+                                Geen taken met status "{{ status_filter }}". Probeer een ander filter.
                             {% endif %}
                         </p>
+                        <button class="btn btn-primary" onclick="showAddTaskModal()">
+                            <i data-feather="plus" class="me-2"></i>
+                            Eerste Taak Toevoegen
+                        </button>
                     </div>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i data-feather="plus-square" class="me-2"></i>
+                    Nieuwe Taak Toevoegen
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addTaskForm" onsubmit="submitAddTask(event)">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="taskTitle" class="form-label fw-bold">Taak Titel *</label>
+                            <input type="text" class="form-control" id="taskTitle" name="title" required 
+                                   placeholder="Bijv. Gazon maaien Villa de Heuvel">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="taskDescription" class="form-label fw-bold">Beschrijving</label>
+                            <textarea class="form-control" id="taskDescription" name="description" rows="3"
+                                      placeholder="Gedetailleerde beschrijving van de werkzaamheden..."></textarea>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="taskPriority" class="form-label fw-bold">Prioriteit *</label>
+                            <select class="form-select" id="taskPriority" name="priority" required>
+                                <option value="low">🟢 Laag</option>
+                                <option value="medium" selected>🟡 Medium</option>
+                                <option value="high">🔴 Hoog</option>
+                                <option value="urgent">🚨 Urgent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="taskDueDate" class="form-label fw-bold">Deadline</label>
+                            <input type="date" class="form-control" id="taskDueDate" name="due_date">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="taskLocation" class="form-label fw-bold">Locatie</label>
+                            <input type="text" class="form-control" id="taskLocation" name="location"
+                                   placeholder="Bijv. Hoofdstraat 123, Amsterdam">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="taskEstimatedHours" class="form-label fw-bold">Geschatte Uren</label>
+                            <input type="number" class="form-control" id="taskEstimatedHours" name="estimated_hours" 
+                                   step="0.5" min="0" placeholder="Bijv. 2.5">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="taskScheduledStart" class="form-label fw-bold">Geplande Starttijd</label>
+                            <input type="datetime-local" class="form-control" id="taskScheduledStart" name="scheduled_start">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i data-feather="x" class="me-1"></i>Annuleren
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="plus" class="me-1"></i>Taak Toevoegen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .task-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .task-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .task-card:hover::before {
+        opacity: 1;
+    }
+    
+    .task-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    
+    .task-card.priority-urgent {
+        border-left-color: #ef4444;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+    }
+    
+    .task-card.priority-high {
+        border-left-color: #ef4444;
+    }
+    
+    .task-card.priority-medium {
+        border-left-color: #f59e0b;
+    }
+    
+    .task-card.priority-low {
+        border-left-color: #22c55e;
+    }
+
+    .priority-urgent {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .priority-high {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+    }
+    
+    .priority-medium {
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+        border: 1px solid #f59e0b;
+    }
+    
+    .priority-low {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+        border: 1px solid #22c55e;
+    }
+
+    .stats-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    
+    .stats-value {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .nav-pills .nav-link {
+        border-radius: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-pills .nav-link:hover {
+        background: var(--surface-elevation-2);
+        transform: translateY(-1px);
+    }
+    
+    .nav-pills .nav-link.active {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+</style>
+
+<script>
+    function showAddTaskModal() {
+        const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+        modal.show();
+        
+        // Set default due date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('taskDueDate').value = tomorrow.toISOString().split('T')[0];
+    }
+
+    function submitAddTask(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Show loading state
+        submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Toevoegen...';
+        submitBtn.disabled = true;
+        
+        fetch('/tasks/add', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and reload page
+                bootstrap.Modal.getInstance(document.getElementById('addTaskModal')).hide();
+                window.location.reload();
+            } else {
+                alert('Er is een fout opgetreden: ' + (data.message || 'Onbekende fout'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Er is een fout opgetreden bij het toevoegen van de taak.');
+        })
+        .finally(() => {
+            // Reset button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    function markComplete(taskId) {
+        fetch(`/tasks/${taskId}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Er is een fout opgetreden: ' + (data.message || 'Onbekende fout'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Er is een fout opgetreden bij het voltooien van de taak.');
+        });
+    }
+
+    function markInProgress(taskId) {
+        fetch(`/tasks/${taskId}/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Er is een fout opgetreden: ' + (data.message || 'Onbekende fout'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Er is een fout opgetreden bij het starten van de taak.');
+        });
+    }
+
+    function editTask(taskId) {
+        // For now, just show an alert - can be expanded later
+        alert('Bewerken functie komt binnenkort beschikbaar!');
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
 {% endblock %}

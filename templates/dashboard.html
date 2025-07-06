@@ -5,75 +5,33 @@
 {% block content %}
 <div class="container my-4">
     <!-- Welcome Header -->
-    <div class="row mb-4">
+    <div class="row mb-5">
         <div class="col-12">
-            <h2 class="fw-bold">Welkom terug, {{ current_user.get_full_name() }}!</h2>
-            <p class="text-muted">Vandaag</p>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">
-                        <i data-feather="zap" class="me-2"></i>
-                        Snelle acties
-                    </h5>
-                    <div class="row g-2">
-                        <div class="col-6 col-md-3">
-                            {% if is_clocked_in %}
-                                {% if is_on_break %}
-                                    <form method="POST" action="{{ url_for('break_end') }}">
-                                        <button type="submit" class="btn btn-warning w-100">
-                                            <i data-feather="play" class="me-1"></i>
-                                            Pauze beëindigen
-                                        </button>
-                                    </form>
-                                {% else %}
-                                    <form method="POST" action="{{ url_for('break_start') }}">
-                                        <button type="submit" class="btn btn-secondary w-100">
-                                            <i data-feather="pause" class="me-1"></i>
-                                            Pauze starten
-                                        </button>
-                                    </form>
-                                {% endif %}
-                            {% else %}
-                                <form method="POST" action="{{ url_for('clock_in') }}">
-                                    <button type="submit" class="btn btn-success w-100">
+            <div class="card border-0" style="background: var(--primary-gradient); color: white;">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 fw-bold mb-2">Welkom terug, {{ current_user.get_full_name() or current_user.first_name or 'Collega' }}!</h1>
+                            <p class="lead mb-0">Hier is je overzicht voor vandaag, {{ today.strftime('%A %d %B %Y') }}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex flex-column align-items-end">
+                                <div class="current-time h4 mb-2" style="font-family: 'JetBrains Mono', monospace;"></div>
+                                <span class="badge bg-white text-dark px-3 py-2">
+                                    {% if is_clocked_in %}
+                                        {% if is_on_break %}
+                                            <i data-feather="pause-circle" class="me-1"></i>
+                                            Op pauze
+                                        {% else %}
+                                            <i data-feather="play-circle" class="me-1"></i>
+                                            Ingeklokt
+                                        {% endif %}
+                                    {% else %}
                                         <i data-feather="clock" class="me-1"></i>
-                                        Inklokken
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-                        <div class="col-6 col-md-3">
-                            {% if is_clocked_in and not is_on_break %}
-                                <form method="POST" action="{{ url_for('clock_out') }}">
-                                    <button type="submit" class="btn btn-danger w-100">
-                                        <i data-feather="square" class="me-1"></i>
-                                        Uitklokken
-                                    </button>
-                                </form>
-                            {% else %}
-                                <a href="{{ url_for('time_tracking') }}" class="btn btn-outline-secondary w-100">
-                                    <i data-feather="clock" class="me-1"></i>
-                                    Tijdlog
-                                </a>
-                            {% endif %}
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <a href="{{ url_for('tasks') }}" class="btn btn-outline-primary w-100">
-                                <i data-feather="check-square" class="me-1"></i>
-                                Taken bekijken
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <a href="{{ url_for('schedule') }}" class="btn btn-outline-info w-100">
-                                <i data-feather="calendar" class="me-1"></i>
-                                Rooster
-                            </a>
+                                        Niet ingeklokt
+                                    {% endif %}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -81,131 +39,537 @@
         </div>
     </div>
 
-    <!-- Status Cards -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i data-feather="clock" class="status-icon mb-2"></i>
-                    <h6 class="card-title">Tijd Status</h6>
-                    {% if is_clocked_in %}
-                        {% if is_on_break %}
-                            <span class="badge bg-warning">Op Pauze</span>
-                        {% else %}
-                            <span class="badge bg-success">Ingeklokt</span>
-                        {% endif %}
-                    {% else %}
-                        <span class="badge bg-secondary">Uitgeklokt</span>
-                    {% endif %}
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="fw-bold mb-4">
+                <i data-feather="zap" class="me-2"></i>
+                Snelle Acties
+            </h3>
+            <div class="row g-3">
+                <div class="col-md-3 col-sm-6">
+                    <div class="quick-action-card" onclick="window.location.href='{{ url_for('tasks') }}'">
+                        <i data-feather="plus-square" class="feature-icon mb-3"></i>
+                        <h5 class="fw-bold">Nieuwe Taak</h5>
+                        <p class="text-muted small">Voeg een nieuwe taak toe</p>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i data-feather="check-square" class="status-icon mb-2"></i>
-                    <h6 class="card-title">Vandaag's Taken</h6>
-                    <h4 class="text-primary">{{ today_tasks|length }}</h4>
+                <div class="col-md-3 col-sm-6">
+                    <div class="quick-action-card" onclick="clockAction('{{ 'clock_out' if is_clocked_in and not is_on_break else 'clock_in' }}')">
+                        <i data-feather="{{ 'log-out' if is_clocked_in and not is_on_break else 'log-in' }}" class="feature-icon mb-3"></i>
+                        <h5 class="fw-bold">{{ 'Uitklokken' if is_clocked_in and not is_on_break else 'Inklokken' }}</h5>
+                        <p class="text-muted small">Registreer je werktijd</p>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i data-feather="message-circle" class="status-icon mb-2"></i>
-                    <h6 class="card-title">Nieuwe Berichten</h6>
-                    <h4 class="text-info">{{ recent_messages|length }}</h4>
+                <div class="col-md-3 col-sm-6">
+                    <div class="quick-action-card" onclick="window.location.href='{{ url_for('messages') }}'">
+                        <i data-feather="message-plus" class="feature-icon mb-3"></i>
+                        <h5 class="fw-bold">Nieuw Bericht</h5>
+                        <p class="text-muted small">Stuur een teamberichtje</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="quick-action-card" onclick="window.location.href='{{ url_for('leave_request') }}'">
+                        <i data-feather="calendar" class="feature-icon mb-3"></i>
+                        <h5 class="fw-bold">Verlof Aanvragen</h5>
+                        <p class="text-muted small">Vraag verlof aan</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Today's Tasks -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+    <!-- Stats Overview -->
+    <div class="row mb-5">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="check-square" class="feature-icon mb-2"></i>
+                <div class="stats-value">{{ today_tasks|length }}</div>
+                <p class="mb-0 text-muted">Taken Vandaag</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="clock" class="feature-icon mb-2"></i>
+                <div class="stats-value">8.5</div>
+                <p class="mb-0 text-muted">Uren Deze Week</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="message-circle" class="feature-icon mb-2"></i>
+                <div class="stats-value">{{ recent_messages|length }}</div>
+                <p class="mb-0 text-muted">Nieuwe Berichten</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i data-feather="users" class="feature-icon mb-2"></i>
+                <div class="stats-value">12</div>
+                <p class="mb-0 text-muted">Teamleden</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Today's Tasks -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i data-feather="calendar" class="me-2"></i>
-                        Vandaag's Taken
+                    <h5 class="mb-0 fw-bold">
+                        <i data-feather="list" class="me-2"></i>
+                        Taken voor Vandaag
                     </h5>
-                    <a href="{{ url_for('tasks') }}" class="btn btn-sm btn-outline-primary">Alle weergeven</a>
+                    <a href="{{ url_for('tasks') }}" class="btn btn-outline-primary btn-sm">
+                        <i data-feather="external-link" class="me-1"></i>
+                        Alle taken
+                    </a>
                 </div>
                 <div class="card-body">
                     {% if today_tasks %}
-                        {% for task in today_tasks %}
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <div>
-                                    <h6 class="mb-1">{{ task.title }}</h6>
-                                    <small class="text-muted">
-                                        <i data-feather="map-pin" class="me-1"></i>
-                                        {{ task.location or 'Geen locatie opgegeven' }}
-                                    </small>
-                                </div>
-                                <div class="text-end">
-                                    {% if task.status == 'completed' %}
-                                        <span class="badge bg-success">Voltooid</span>
-                                    {% else %}
-                                        <form method="POST" action="{{ url_for('complete_task', task_id=task.id) }}" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i data-feather="check" class="me-1"></i>
-                                                Voltooien
-                                            </button>
-                                        </form>
-                                    {% endif %}
+                        <div class="row g-3">
+                            {% for task in today_tasks %}
+                            <div class="col-12">
+                                <div class="task-card card priority-{{ task.priority }} border-0 p-3" onclick="showTaskDetails('{{ task.id }}')">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <h6 class="fw-bold mb-0 me-2">{{ task.title }}</h6>
+                                                <span class="status-badge priority-{{ task.priority }}">
+                                                    {{ task.priority|title }}
+                                                </span>
+                                            </div>
+                                            <p class="text-muted small mb-2">{{ task.description[:100] }}{% if task.description|length > 100 %}...{% endif %}</p>
+                                            <div class="d-flex align-items-center small text-muted">
+                                                <i data-feather="map-pin" class="me-1" style="width: 14px; height: 14px;"></i>
+                                                <span class="me-3">{{ task.location or 'Geen locatie' }}</span>
+                                                {% if task.estimated_hours %}
+                                                <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                                <span>{{ task.estimated_hours }}u</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            {% if task.status == 'completed' %}
+                                                <span class="badge bg-success">
+                                                    <i data-feather="check" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                    Voltooid
+                                                </span>
+                                            {% elif task.status == 'in_progress' %}
+                                                <span class="badge bg-warning">
+                                                    <i data-feather="play" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                    Bezig
+                                                </span>
+                                            {% else %}
+                                                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); markComplete('{{ task.id }}')">
+                                                    <i data-feather="check" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                    Voltooien
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     {% else %}
-                        <div class="text-center py-4">
-                            <i data-feather="check-circle" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
-                            <p class="text-muted">Geen taken gepland voor vandaag!</p>
+                        <div class="text-center py-5">
+                            <i data-feather="check-circle" class="feature-icon text-success mb-3"></i>
+                            <h5 class="text-muted">Geweldig! Geen taken voor vandaag</h5>
+                            <p class="text-muted">Geniet van je vrije tijd of bekijk taken voor andere dagen.</p>
+                            <a href="{{ url_for('tasks') }}" class="btn btn-outline-primary">
+                                <i data-feather="plus" class="me-1"></i>
+                                Nieuwe taak toevoegen
+                            </a>
                         </div>
                     {% endif %}
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Recent Messages -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Recent Messages -->
+            <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
+                    <h5 class="mb-0 fw-bold">
                         <i data-feather="message-circle" class="me-2"></i>
                         Recente Berichten
                     </h5>
-                    <a href="{{ url_for('messages') }}" class="btn btn-sm btn-outline-primary">Alle weergeven</a>
+                    <a href="{{ url_for('messages') }}" class="btn btn-outline-primary btn-sm">
+                        <i data-feather="external-link" class="me-1"></i>
+                        Alle berichten
+                    </a>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     {% if recent_messages %}
                         {% for message in recent_messages %}
-                            <div class="d-flex justify-content-between align-items-start py-2 border-bottom">
-                                <div>
-                                    <h6 class="mb-1">{{ message.subject }}</h6>
-                                    <p class="mb-1 small">{{ message.content[:100] }}{% if message.content|length > 100 %}...{% endif %}</p>
-                                    <small class="text-muted">
-                                        {% if message.sender %}
-                                            {{ message.sender.get_full_name() }} • 
-                                        {% endif %}
-                                        {{ message.created_at.strftime('%d-%m %H:%M') }}
-                                    </small>
+                        <div class="message-card border-0 {% if message.message_type == 'urgent' %}message-urgent{% endif %}" onclick="window.location.href='{{ url_for('messages') }}'">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0">{{ message.subject }}</h6>
+                                    {% if message.message_type == 'urgent' %}
+                                        <span class="badge bg-danger">
+                                            <i data-feather="alert-triangle" class="me-1" style="width: 12px; height: 12px;"></i>
+                                            Urgent
+                                        </span>
+                                    {% endif %}
                                 </div>
-                                {% if message.message_type == 'urgent' %}
-                                    <span class="badge bg-danger">Urgent</span>
-                                {% endif %}
+                                <p class="text-muted small mb-2">{{ message.content[:80] }}{% if message.content|length > 80 %}...{% endif %}</p>
+                                <small class="text-muted">
+                                    {% if message.sender %}
+                                        {{ message.sender.get_full_name() }} • 
+                                    {% endif %}
+                                    {{ message.created_at.strftime('%d-%m %H:%M') }}
+                                </small>
                             </div>
+                        </div>
+                        {% if not loop.last %}<hr class="my-0">{% endif %}
                         {% endfor %}
                     {% else %}
                         <div class="text-center py-4">
-                            <i data-feather="inbox" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                            <i data-feather="inbox" class="feature-icon text-muted mb-3"></i>
                             <p class="text-muted">Geen recente berichten</p>
+                            <a href="{{ url_for('messages') }}" class="btn btn-outline-primary btn-sm">
+                                <i data-feather="plus" class="me-1"></i>
+                                Nieuw bericht
+                            </a>
                         </div>
                     {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Time Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-bold">
+                        <i data-feather="clock" class="me-2"></i>
+                        Tijdregistratie
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if not is_clocked_in %}
+                        <button class="btn btn-success clock-btn w-100 mb-3" onclick="clockAction('clock_in')">
+                            <i data-feather="log-in" class="me-2"></i>
+                            Inklokken
+                        </button>
+                    {% else %}
+                        {% if is_on_break %}
+                            <button class="btn btn-warning clock-btn w-100 mb-3" onclick="clockAction('break_end')">
+                                <i data-feather="play" class="me-2"></i>
+                                Pauze Beëindigen
+                            </button>
+                        {% else %}
+                            <button class="btn btn-warning clock-btn w-100 mb-2" onclick="clockAction('break_start')">
+                                <i data-feather="pause" class="me-2"></i>
+                                Pauze Nemen
+                            </button>
+                            <button class="btn btn-danger clock-btn w-100" onclick="clockAction('clock_out')">
+                                <i data-feather="log-out" class="me-2"></i>
+                                Uitklokken
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <hr>
+                    <a href="{{ url_for('time_tracking') }}" class="btn btn-outline-primary w-100">
+                        <i data-feather="bar-chart" class="me-2"></i>
+                        Bekijk Tijdoverzicht
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Floating Add Button -->
+<button class="floating-add-btn" onclick="showQuickAddModal()">
+    <i data-feather="plus"></i>
+</button>
+
+<!-- Quick Add Modal -->
+<div class="modal fade" id="quickAddModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Snel Toevoegen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <button class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4" onclick="window.location.href='{{ url_for('tasks') }}'">
+                            <i data-feather="plus-square" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <span class="fw-bold">Nieuwe Taak</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4" onclick="window.location.href='{{ url_for('messages') }}'">
+                            <i data-feather="message-plus" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <span class="fw-bold">Nieuw Bericht</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4" onclick="window.location.href='{{ url_for('leave_request') }}'">
+                            <i data-feather="calendar" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <span class="fw-bold">Verlof Aanvraag</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4" onclick="window.location.href='{{ url_for('team') }}'">
+                            <i data-feather="user-plus" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <span class="fw-bold">Team Bekijken</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .quick-action-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .quick-action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .quick-action-card:hover::before {
+        left: 100%;
+    }
+    
+    .quick-action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    
+    .stats-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .stats-value {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+    }
+
+    .task-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .task-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .task-card:hover::before {
+        opacity: 1;
+    }
+    
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .task-card.priority-urgent {
+        border-left-color: #ef4444;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+    }
+    
+    .task-card.priority-high {
+        border-left-color: #ef4444;
+    }
+    
+    .task-card.priority-medium {
+        border-left-color: #f59e0b;
+    }
+    
+    .task-card.priority-low {
+        border-left-color: #22c55e;
+    }
+
+    .message-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .message-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+    
+    .message-urgent {
+        border-left: 4px solid #ef4444;
+        animation: pulse-border 2s infinite;
+    }
+
+    @keyframes pulse-border {
+        0%, 100% { border-left-color: #ef4444; }
+        50% { border-left-color: #dc2626; }
+    }
+
+    .priority-urgent {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .priority-high {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+    }
+    
+    .priority-medium {
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+        border: 1px solid #f59e0b;
+    }
+    
+    .priority-low {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+        border: 1px solid #22c55e;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+</style>
+
+<script>
+    function updateTimeDisplay() {
+        const timeElements = document.querySelectorAll('.current-time');
+        timeElements.forEach(function(element) {
+            const now = new Date();
+            element.textContent = now.toLocaleTimeString('nl-NL', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        });
+    }
+
+    function clockAction(action) {
+        fetch(`/{{ action }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Er is een fout opgetreden: ' + (data.message || 'Onbekende fout'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Er is een fout opgetreden bij het verwerken van je verzoek.');
+        });
+    }
+
+    function markComplete(taskId) {
+        fetch(`/tasks/${taskId}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Er is een fout opgetreden: ' + (data.message || 'Onbekende fout'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Er is een fout opgetreden bij het voltooien van de taak.');
+        });
+    }
+
+    function showTaskDetails(taskId) {
+        // Voor nu gewoon doorverwijzen naar taken pagina
+        window.location.href = '/tasks';
+    }
+
+    function showQuickAddModal() {
+        const modal = new bootstrap.Modal(document.getElementById('quickAddModal'));
+        modal.show();
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTimeDisplay();
+        setInterval(updateTimeDisplay, 1000);
+        
+        // Refresh feather icons
+        feather.replace();
+    });
+</script>
 {% endblock %}

@@ -1,4 +1,4 @@
-from flask import session, render_template, request, redirect, url_for, flash
+from flask import session, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import current_user
 from datetime import datetime, date, timedelta
 import logging
@@ -83,18 +83,125 @@ def tasks():
 @app.route('/tasks/<int:task_id>/complete', methods=['POST'])
 @require_login
 def complete_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    
-    if task.assigned_to != current_user.id:
-        flash('Je bent niet bevoegd om deze taak te voltooien.', 'error')
-        return redirect(url_for('tasks'))
-    
-    task.status = 'completed'
-    task.completed_at = datetime.now()
-    db.session.commit()
-    
-    flash('Taak gemarkeerd als voltooid!', 'success')
-    return redirect(url_for('tasks'))
+    try:
+        task = Task.query.get_or_404(task_id)
+        
+        if task.assigned_to != current_user.id:
+            return jsonify({
+                'success': False, 
+                'message': 'Je bent niet bevoegd om deze taak te voltooien.'
+            })
+        
+        task.status = 'completed'
+        task.completed_at = datetime.now()
+        db.session.commit()
+        
+        # Check if it's an AJAX request
+        if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
+            return jsonify({
+                'success': True,
+                'message': f'Taak "{task.title}" is voltooid!'
+            })
+        else:
+            flash('Taak gemarkeerd als voltooid!', 'success')
+            return redirect(url_for('tasks'))
+    except Exception as e:
+        logging.error(f"Error completing task {task_id}: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Er is een fout opgetreden bij het voltooien van de taak.'
+        })
+
+@app.route('/tasks/add', methods=['POST'])
+@require_login
+def add_task():
+    try:
+        title = request.form.get('title')
+        description = request.form.get('description', '')
+        priority = request.form.get('priority', 'medium')
+        due_date = request.form.get('due_date')
+        location = request.form.get('location', '')
+        estimated_hours = request.form.get('estimated_hours')
+        scheduled_start = request.form.get('scheduled_start')
+        
+        if not title:
+            return jsonify({
+                'success': False,
+                'message': 'Taak titel is verplicht.'
+            })
+        
+        # Create new task
+        task = Task()
+        task.title = title
+        task.description = description
+        task.priority = priority
+        task.location = location
+        task.assigned_to = current_user.id
+        task.created_by = current_user.id
+        task.status = 'pending'
+        
+        # Handle due date
+        if due_date:
+            try:
+                task.due_date = datetime.strptime(due_date, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+        
+        # Handle estimated hours
+        if estimated_hours:
+            try:
+                task.estimated_hours = float(estimated_hours)
+            except ValueError:
+                pass
+        
+        # Handle scheduled start
+        if scheduled_start:
+            try:
+                task.scheduled_start = datetime.strptime(scheduled_start, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                pass
+        
+        db.session.add(task)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Taak "{title}" is succesvol toegevoegd!'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error adding task: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Er is een fout opgetreden bij het toevoegen van de taak.'
+        })
+
+@app.route('/tasks/<int:task_id>/start', methods=['POST'])
+@require_login
+def start_task(task_id):
+    try:
+        task = Task.query.get_or_404(task_id)
+        
+        if task.assigned_to != current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Je bent niet bevoegd om deze taak te starten.'
+            })
+        
+        task.status = 'in_progress'
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Taak "{task.title}" is gestart!'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error starting task {task_id}: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Er is een fout opgetreden bij het starten van de taak.'
+        })
 
 @app.route('/team')
 @require_login
