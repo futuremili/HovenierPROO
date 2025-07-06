@@ -185,7 +185,12 @@
                                 <div>
                                     <h6 class="mb-1">{{ message.subject }}</h6>
                                     <p class="mb-1 small">{{ message.content[:100] }}{% if message.content|length > 100 %}...{% endif %}</p>
-                                    <small class="text-muted">{{ message.sender.get_full_name() }} • {{ moment(message.created_at).fromNow() }}</small>
+                                    <small class="text-muted">
+                                        {% if message.sender %}
+                                            {{ message.sender.get_full_name() }} • 
+                                        {% endif %}
+                                        {{ message.created_at.strftime('%d-%m %H:%M') }}
+                                    </small>
                                 </div>
                                 {% if message.message_type == 'urgent' %}
                                     <span class="badge bg-danger">Urgent</span>
