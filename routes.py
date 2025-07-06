@@ -1,6 +1,7 @@
 from flask import session, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from datetime import datetime, date, timedelta
+import logging
 from app import app, db
 from replit_auth import require_login, make_replit_blueprint
 from models import User, Task, TimeEntry, Message, LeaveRequest
@@ -24,18 +25,30 @@ def dashboard():
     user = current_user
     today = date.today()
     
-    # Get today's tasks
-    today_tasks = Task.query.filter_by(assigned_to=user.id).filter(
-        Task.due_date == today
-    ).order_by(Task.priority.desc()).all()
+    # Get today's tasks (handle potential database issues gracefully)
+    try:
+        today_tasks = Task.query.filter_by(assigned_to=user.id).filter(
+            Task.due_date == today
+        ).order_by(Task.priority.desc()).all()
+    except Exception as e:
+        logging.error(f"Error fetching tasks: {e}")
+        today_tasks = []
     
-    # Get recent messages
-    recent_messages = Message.query.order_by(Message.created_at.desc()).limit(5).all()
+    # Get recent messages (handle potential database issues gracefully)
+    try:
+        recent_messages = Message.query.order_by(Message.created_at.desc()).limit(5).all()
+    except Exception as e:
+        logging.error(f"Error fetching messages: {e}")
+        recent_messages = []
     
-    # Get current time status
-    latest_entry = TimeEntry.query.filter_by(user_id=user.id).order_by(
-        TimeEntry.timestamp.desc()
-    ).first()
+    # Get current time status (handle potential database issues gracefully)
+    try:
+        latest_entry = TimeEntry.query.filter_by(user_id=user.id).order_by(
+            TimeEntry.timestamp.desc()
+        ).first()
+    except Exception as e:
+        logging.error(f"Error fetching time entries: {e}")
+        latest_entry = None
     
     is_clocked_in = False
     is_on_break = False

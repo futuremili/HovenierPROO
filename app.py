@@ -23,6 +23,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
+    "connect_args": {
+        "sslmode": "require",
+        "connect_timeout": 10
+    }
 }
 # initialize the app with the extension, flask-sqlalchemy >= 3.0.x
 db.init_app(app)
