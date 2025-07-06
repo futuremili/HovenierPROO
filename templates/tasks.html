@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks - LandscapePro{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i data-feather="check-square" class="me-2"></i>
+                My Tasks
+            </h2>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if status_filter == 'all' else '' }}" 
+                       href="{{ url_for('tasks', status='all') }}">All Tasks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if status_filter == 'pending' else '' }}" 
+                       href="{{ url_for('tasks', status='pending') }}">Pending</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if status_filter == 'in_progress' else '' }}" 
+                       href="{{ url_for('tasks', status='in_progress') }}">In Progress</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if status_filter == 'completed' else '' }}" 
+                       href="{{ url_for('tasks', status='completed') }}">Completed</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="row">
+        <div class="col-12">
+            {% if tasks %}
+                {% for task in tasks %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="card-title mb-0 me-3">{{ task.title }}</h5>
+                                        
+                                        <!-- Priority Badge -->
+                                        {% if task.priority == 'urgent' %}
+                                            <span class="badge bg-danger">Urgent</span>
+                                        {% elif task.priority == 'high' %}
+                                            <span class="badge bg-warning">High</span>
+                                        {% elif task.priority == 'medium' %}
+                                            <span class="badge bg-info">Medium</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Low</span>
+                                        {% endif %}
+                                        
+                                        <!-- Status Badge -->
+                                        {% if task.status == 'completed' %}
+                                            <span class="badge bg-success ms-2">Completed</span>
+                                        {% elif task.status == 'in_progress' %}
+                                            <span class="badge bg-primary ms-2">In Progress</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-2">Pending</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if task.description %}
+                                        <p class="card-text">{{ task.description }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="row g-2">
+                                        {% if task.location %}
+                                            <div class="col-auto">
+                                                <small class="text-muted">
+                                                    <i data-feather="map-pin" class="me-1"></i>
+                                                    {{ task.location }}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if task.due_date %}
+                                            <div class="col-auto">
+                                                <small class="text-muted">
+                                                    <i data-feather="calendar" class="me-1"></i>
+                                                    Due: {{ task.due_date.strftime('%m/%d/%Y') }}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if task.estimated_hours %}
+                                            <div class="col-auto">
+                                                <small class="text-muted">
+                                                    <i data-feather="clock" class="me-1"></i>
+                                                    Est: {{ task.estimated_hours }}h
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 text-md-end">
+                                    {% if task.status != 'completed' %}
+                                        <form method="POST" action="{{ url_for('complete_task', task_id=task.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-success">
+                                                <i data-feather="check" class="me-1"></i>
+                                                Mark Complete
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <div class="text-success">
+                                            <i data-feather="check-circle" class="me-1"></i>
+                                            <small>Completed {{ task.completed_at.strftime('%m/%d/%Y') if task.completed_at else '' }}</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i data-feather="inbox" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                        <h5 class="text-muted">No tasks found</h5>
+                        <p class="text-muted">
+                            {% if status_filter == 'all' %}
+                                You don't have any tasks assigned yet.
+                            {% else %}
+                                No tasks with status "{{ status_filter.replace('_', ' ').title() }}"
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

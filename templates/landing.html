@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Landscaping Workforce Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            <div class="mb-5">
+                <i data-feather="zap" class="landing-icon mb-3"></i>
+                <h1 class="display-4 fw-bold mb-3">LandscapePro</h1>
+                <p class="lead mb-4">Professional workforce management for landscaping teams. Track tasks, manage schedules, and stay connected with your crew.</p>
+            </div>
+            
+            <div class="row text-start mb-5">
+                <div class="col-md-4 mb-3">
+                    <div class="feature-card">
+                        <i data-feather="check-square" class="feature-icon mb-2"></i>
+                        <h5>Task Management</h5>
+                        <p class="small text-muted">View and complete assigned tasks with real-time updates.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="feature-card">
+                        <i data-feather="clock" class="feature-icon mb-2"></i>
+                        <h5>Time Tracking</h5>
+                        <p class="small text-muted">Clock in/out and track break times with location data.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="feature-card">
+                        <i data-feather="users" class="feature-icon mb-2"></i>
+                        <h5>Team Communication</h5>
+                        <p class="small text-muted">Stay connected with team announcements and messages.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-block">
+                <a href="{{ url_for('replit_auth.login') }}" class="btn btn-success btn-lg px-5">
+                    <i data-feather="log-in" class="me-2"></i>
+                    Get Started
+                </a>
+            </div>
+            
+            <p class="mt-4 text-muted small">
+                Designed for outdoor workers with mobile-first responsive design
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Time Tracking - LandscapePro{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i data-feather="clock" class="me-2"></i>
+                Time Tracking
+            </h2>
+        </div>
+    </div>
+
+    <!-- Current Status Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i data-feather="activity" class="me-2"></i>
+                        Current Status
+                    </h5>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="status-indicator me-3">
+                                    {% if current_status == 'clocked_in' %}
+                                        <div class="status-dot bg-success"></div>
+                                        <span class="fw-bold text-success">Clocked In</span>
+                                    {% elif current_status == 'on_break' %}
+                                        <div class="status-dot bg-warning"></div>
+                                        <span class="fw-bold text-warning">On Break</span>
+                                    {% else %}
+                                        <div class="status-dot bg-secondary"></div>
+                                        <span class="fw-bold text-muted">Clocked Out</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 text-md-end">
+                            <div class="btn-group" role="group">
+                                {% if current_status == 'clocked_out' %}
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#clockInModal">
+                                        <i data-feather="play" class="me-1"></i>
+                                        Clock In
+                                    </button>
+                                {% elif current_status == 'clocked_in' %}
+                                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#breakStartModal">
+                                        <i data-feather="pause" class="me-1"></i>
+                                        Start Break
+                                    </button>
+                                    <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#clockOutModal">
+                                        <i data-feather="square" class="me-1"></i>
+                                        Clock Out
+                                    </button>
+                                {% elif current_status == 'on_break' %}
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#breakEndModal">
+                                        <i data-feather="play" class="me-1"></i>
+                                        End Break
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Time Log -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Today's Time Log</h5>
+                </div>
+                <div class="card-body">
+                    {% if today_entries %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Action</th>
+                                        <th>Location</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in today_entries %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ entry.timestamp.strftime('%I:%M %p') }}</strong>
+                                            </td>
+                                            <td>
+                                                {% if entry.entry_type == 'clock_in' %}
+                                                    <span class="badge bg-success">
+                                                        <i data-feather="play" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                        Clock In
+                                                    </span>
+                                                {% elif entry.entry_type == 'clock_out' %}
+                                                    <span class="badge bg-danger">
+                                                        <i data-feather="square" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                        Clock Out
+                                                    </span>
+                                                {% elif entry.entry_type == 'break_start' %}
+                                                    <span class="badge bg-warning">
+                                                        <i data-feather="pause" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                        Break Start
+                                                    </span>
+                                                {% elif entry.entry_type == 'break_end' %}
+                                                    <span class="badge bg-info">
+                                                        <i data-feather="play" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                        Break End
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ entry.location or '-' }}</td>
+                                            <td>{{ entry.notes or '-' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="clock" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                            <p class="text-muted">No time entries for today yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clock In Modal -->
+<div class="modal fade" id="clockInModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Clock In</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('clock_in') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location (Optional)</label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="Enter work location">
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Any additional notes"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i data-feather="play" class="me-1"></i>
+                        Clock In
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Clock Out Modal -->
+<div class="modal fade" id="clockOutModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Clock Out</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('clock_out') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="clockOutNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="clockOutNotes" name="notes" rows="2" placeholder="End of day summary"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i data-feather="square" class="me-1"></i>
+                        Clock Out
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Break Start Modal -->
+<div class="modal fade" id="breakStartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Start Break</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('break_start') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="breakStartNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="breakStartNotes" name="notes" rows="2" placeholder="Break type or reason"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i data-feather="pause" class="me-1"></i>
+                        Start Break
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Break End Modal -->
+<div class="modal fade" id="breakEndModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">End Break</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('break_end') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="breakEndNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="breakEndNotes" name="notes" rows="2" placeholder="Back to work notes"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="play" class="me-1"></i>
+                        End Break
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

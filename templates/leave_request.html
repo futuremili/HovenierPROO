@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Leave Request - LandscapePro{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i data-feather="calendar-x" class="me-2"></i>
+                Leave Requests
+            </h2>
+        </div>
+    </div>
+
+    <!-- Submit New Request -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Submit New Leave Request</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('submit_leave_request') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="leave_type" class="form-label">Leave Type *</label>
+                                <select class="form-select" id="leave_type" name="leave_type" required>
+                                    <option value="">Select leave type...</option>
+                                    <option value="vacation">Vacation</option>
+                                    <option value="sick">Sick Leave</option>
+                                    <option value="personal">Personal Day</option>
+                                    <option value="emergency">Emergency</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="start_date" class="form-label">Start Date *</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="end_date" class="form-label">End Date *</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason (Optional)</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Brief explanation for the leave request"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="send" class="me-1"></i>
+                            Submit Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previous Requests -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">My Leave Requests</h5>
+                </div>
+                <div class="card-body">
+                    {% if leave_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Dates</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in leave_requests %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    {{ request.leave_type.replace('_', ' ').title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ request.start_date.strftime('%m/%d/%Y') }}</strong>
+                                                {% if request.start_date != request.end_date %}
+                                                    to <strong>{{ request.end_date.strftime('%m/%d/%Y') }}</strong>
+                                                {% endif %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    {% set days = (request.end_date - request.start_date).days + 1 %}
+                                                    {{ days }} day{{ 's' if days != 1 else '' }}
+                                                </small>
+                                            </td>
+                                            <td>{{ request.reason or '-' }}</td>
+                                            <td>
+                                                {% if request.status == 'approved' %}
+                                                    <span class="badge bg-success">
+                                                        <i data-feather="check" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                        Approved
+                                                    </span>
+                                                {% elif request.status == 'denied' %}
+                                                    <span class="badge bg-danger">
+                                                        <i data-feather="x" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                        Denied
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">
+                                                        <i data-feather="clock" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                        Pending
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ request.created_at.strftime('%m/%d/%Y') }}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="calendar-x" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                            <p class="text-muted">No leave requests submitted yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
