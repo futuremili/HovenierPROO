@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Landscaping Workforce Management{% endblock %}</title>
+    <title>{% block title %}Hovenier Personeelsbeheer{% endblock %}</title>
     
     <!-- Bootstrap CSS with Replit theme -->
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('dashboard') }}">
                 <i data-feather="zap" class="me-2"></i>
-                LandscapePro
+                HovenierPro
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -39,19 +39,19 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('tasks') }}">
                             <i data-feather="check-square" class="me-1"></i>
-                            Tasks
+                            Taken
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('schedule') }}">
                             <i data-feather="calendar" class="me-1"></i>
-                            Schedule
+                            Rooster
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('time_tracking') }}">
                             <i data-feather="clock" class="me-1"></i>
-                            Time
+                            Tijd
                         </a>
                     </li>
                     <li class="nav-item">
@@ -63,7 +63,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('messages') }}">
                             <i data-feather="message-circle" class="me-1"></i>
-                            Messages
+                            Berichten
                         </a>
                     </li>
                 </ul>
@@ -81,12 +81,12 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('leave_request') }}">
                                 <i data-feather="calendar-x" class="me-2"></i>
-                                Leave Request
+                                Verlofaanvraag
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('replit_auth.logout') }}">
                                 <i data-feather="log-out" class="me-2"></i>
-                                Logout
+                                Uitloggen
                             </a></li>
                         </ul>
                     </li>

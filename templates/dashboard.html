@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - LandscapePro{% endblock %}
+{% block title %}Dashboard - HovenierPro{% endblock %}
 
 {% block content %}
 <div class="container my-4">
     <!-- Welcome Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="fw-bold">Welcome back, {{ current_user.get_full_name() }}!</h2>
-            <p class="text-muted">{{ moment().format('dddd, MMMM Do YYYY') }}</p>
+            <h2 class="fw-bold">Welkom terug, {{ current_user.get_full_name() }}!</h2>
+            <p class="text-muted">Vandaag</p>
         </div>
     </div>
 
@@ -19,7 +19,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-3">
                         <i data-feather="zap" class="me-2"></i>
-                        Quick Actions
+                        Snelle acties
                     </h5>
                     <div class="row g-2">
                         <div class="col-6 col-md-3">
@@ -28,14 +28,14 @@
                                     <form method="POST" action="{{ url_for('break_end') }}">
                                         <button type="submit" class="btn btn-warning w-100">
                                             <i data-feather="play" class="me-1"></i>
-                                            End Break
+                                            Pauze beëindigen
                                         </button>
                                     </form>
                                 {% else %}
                                     <form method="POST" action="{{ url_for('break_start') }}">
                                         <button type="submit" class="btn btn-secondary w-100">
                                             <i data-feather="pause" class="me-1"></i>
-                                            Start Break
+                                            Pauze starten
                                         </button>
                                     </form>
                                 {% endif %}
@@ -43,7 +43,7 @@
                                 <form method="POST" action="{{ url_for('clock_in') }}">
                                     <button type="submit" class="btn btn-success w-100">
                                         <i data-feather="clock" class="me-1"></i>
-                                        Clock In
+                                        Inklokken
                                     </button>
                                 </form>
                             {% endif %}
@@ -53,26 +53,26 @@
                                 <form method="POST" action="{{ url_for('clock_out') }}">
                                     <button type="submit" class="btn btn-danger w-100">
                                         <i data-feather="square" class="me-1"></i>
-                                        Clock Out
+                                        Uitklokken
                                     </button>
                                 </form>
                             {% else %}
                                 <a href="{{ url_for('time_tracking') }}" class="btn btn-outline-secondary w-100">
                                     <i data-feather="clock" class="me-1"></i>
-                                    Time Log
+                                    Tijdlog
                                 </a>
                             {% endif %}
                         </div>
                         <div class="col-6 col-md-3">
                             <a href="{{ url_for('tasks') }}" class="btn btn-outline-primary w-100">
                                 <i data-feather="check-square" class="me-1"></i>
-                                View Tasks
+                                Taken bekijken
                             </a>
                         </div>
                         <div class="col-6 col-md-3">
                             <a href="{{ url_for('schedule') }}" class="btn btn-outline-info w-100">
                                 <i data-feather="calendar" class="me-1"></i>
-                                Schedule
+                                Rooster
                             </a>
                         </div>
                     </div>
@@ -87,15 +87,15 @@
             <div class="card text-center">
                 <div class="card-body">
                     <i data-feather="clock" class="status-icon mb-2"></i>
-                    <h6 class="card-title">Time Status</h6>
+                    <h6 class="card-title">Tijd Status</h6>
                     {% if is_clocked_in %}
                         {% if is_on_break %}
-                            <span class="badge bg-warning">On Break</span>
+                            <span class="badge bg-warning">Op Pauze</span>
                         {% else %}
-                            <span class="badge bg-success">Clocked In</span>
+                            <span class="badge bg-success">Ingeklokt</span>
                         {% endif %}
                     {% else %}
-                        <span class="badge bg-secondary">Clocked Out</span>
+                        <span class="badge bg-secondary">Uitgeklokt</span>
                     {% endif %}
                 </div>
             </div>
@@ -104,7 +104,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     <i data-feather="check-square" class="status-icon mb-2"></i>
-                    <h6 class="card-title">Today's Tasks</h6>
+                    <h6 class="card-title">Vandaag's Taken</h6>
                     <h4 class="text-primary">{{ today_tasks|length }}</h4>
                 </div>
             </div>
@@ -113,7 +113,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     <i data-feather="message-circle" class="status-icon mb-2"></i>
-                    <h6 class="card-title">New Messages</h6>
+                    <h6 class="card-title">Nieuwe Berichten</h6>
                     <h4 class="text-info">{{ recent_messages|length }}</h4>
                 </div>
             </div>
@@ -127,9 +127,9 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i data-feather="calendar" class="me-2"></i>
-                        Today's Tasks
+                        Vandaag's Taken
                     </h5>
-                    <a href="{{ url_for('tasks') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    <a href="{{ url_for('tasks') }}" class="btn btn-sm btn-outline-primary">Alle weergeven</a>
                 </div>
                 <div class="card-body">
                     {% if today_tasks %}
@@ -139,17 +139,17 @@
                                     <h6 class="mb-1">{{ task.title }}</h6>
                                     <small class="text-muted">
                                         <i data-feather="map-pin" class="me-1"></i>
-                                        {{ task.location or 'No location specified' }}
+                                        {{ task.location or 'Geen locatie opgegeven' }}
                                     </small>
                                 </div>
                                 <div class="text-end">
                                     {% if task.status == 'completed' %}
-                                        <span class="badge bg-success">Completed</span>
+                                        <span class="badge bg-success">Voltooid</span>
                                     {% else %}
                                         <form method="POST" action="{{ url_for('complete_task', task_id=task.id) }}" class="d-inline">
                                             <button type="submit" class="btn btn-sm btn-success">
                                                 <i data-feather="check" class="me-1"></i>
-                                                Complete
+                                                Voltooien
                                             </button>
                                         </form>
                                     {% endif %}
@@ -159,7 +159,7 @@
                     {% else %}
                         <div class="text-center py-4">
                             <i data-feather="check-circle" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
-                            <p class="text-muted">No tasks scheduled for today!</p>
+                            <p class="text-muted">Geen taken gepland voor vandaag!</p>
                         </div>
                     {% endif %}
                 </div>
@@ -174,9 +174,9 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i data-feather="message-circle" class="me-2"></i>
-                        Recent Messages
+                        Recente Berichten
                     </h5>
-                    <a href="{{ url_for('messages') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    <a href="{{ url_for('messages') }}" class="btn btn-sm btn-outline-primary">Alle weergeven</a>
                 </div>
                 <div class="card-body">
                     {% if recent_messages %}
@@ -195,7 +195,7 @@
                     {% else %}
                         <div class="text-center py-4">
                             <i data-feather="inbox" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
-                            <p class="text-muted">No recent messages</p>
+                            <p class="text-muted">Geen recente berichten</p>
                         </div>
                     {% endif %}
                 </div>

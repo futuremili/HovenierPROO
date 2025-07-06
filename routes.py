@@ -73,14 +73,14 @@ def complete_task(task_id):
     task = Task.query.get_or_404(task_id)
     
     if task.assigned_to != current_user.id:
-        flash('You are not authorized to complete this task.', 'error')
+        flash('Je bent niet bevoegd om deze taak te voltooien.', 'error')
         return redirect(url_for('tasks'))
     
     task.status = 'completed'
     task.completed_at = datetime.now()
     db.session.commit()
     
-    flash('Task marked as completed!', 'success')
+    flash('Taak gemarkeerd als voltooid!', 'success')
     return redirect(url_for('tasks'))
 
 @app.route('/team')
@@ -154,16 +154,15 @@ def clock_in():
     location = request.form.get('location', '')
     notes = request.form.get('notes', '')
     
-    entry = TimeEntry(
-        user_id=user.id,
-        entry_type='clock_in',
-        location=location,
-        notes=notes
-    )
+    entry = TimeEntry()
+    entry.user_id = user.id
+    entry.entry_type = 'clock_in'
+    entry.location = location
+    entry.notes = notes
     db.session.add(entry)
     db.session.commit()
     
-    flash('Clocked in successfully!', 'success')
+    flash('Succesvol ingeklokt!', 'success')
     return redirect(url_for('time_tracking'))
 
 @app.route('/time-tracking/clock-out', methods=['POST'])
@@ -172,15 +171,14 @@ def clock_out():
     user = current_user
     notes = request.form.get('notes', '')
     
-    entry = TimeEntry(
-        user_id=user.id,
-        entry_type='clock_out',
-        notes=notes
-    )
+    entry = TimeEntry()
+    entry.user_id = user.id
+    entry.entry_type = 'clock_out'
+    entry.notes = notes
     db.session.add(entry)
     db.session.commit()
     
-    flash('Clocked out successfully!', 'success')
+    flash('Succesvol uitgeklokt!', 'success')
     return redirect(url_for('time_tracking'))
 
 @app.route('/time-tracking/break-start', methods=['POST'])
@@ -189,15 +187,14 @@ def break_start():
     user = current_user
     notes = request.form.get('notes', '')
     
-    entry = TimeEntry(
-        user_id=user.id,
-        entry_type='break_start',
-        notes=notes
-    )
+    entry = TimeEntry()
+    entry.user_id = user.id
+    entry.entry_type = 'break_start'
+    entry.notes = notes
     db.session.add(entry)
     db.session.commit()
     
-    flash('Break started!', 'success')
+    flash('Pauze gestart!', 'success')
     return redirect(url_for('time_tracking'))
 
 @app.route('/time-tracking/break-end', methods=['POST'])
@@ -206,15 +203,14 @@ def break_end():
     user = current_user
     notes = request.form.get('notes', '')
     
-    entry = TimeEntry(
-        user_id=user.id,
-        entry_type='break_end',
-        notes=notes
-    )
+    entry = TimeEntry()
+    entry.user_id = user.id
+    entry.entry_type = 'break_end'
+    entry.notes = notes
     db.session.add(entry)
     db.session.commit()
     
-    flash('Break ended!', 'success')
+    flash('Pauze beëindigd!', 'success')
     return redirect(url_for('time_tracking'))
 
 @app.route('/leave-request')
@@ -235,23 +231,30 @@ def submit_leave_request():
     user = current_user
     
     leave_type = request.form.get('leave_type')
-    start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
-    end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
+    start_date_str = request.form.get('start_date')
+    end_date_str = request.form.get('end_date')
+    
+    if not start_date_str or not end_date_str:
+        flash('Start- en einddatum zijn verplicht.', 'error')
+        return redirect(url_for('leave_request'))
+    
+    start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
     reason = request.form.get('reason', '')
     
     if start_date > end_date:
-        flash('Start date cannot be after end date.', 'error')
+        flash('Startdatum kan niet na einddatum zijn.', 'error')
         return redirect(url_for('leave_request'))
     
-    leave_req = LeaveRequest(
-        user_id=user.id,
-        leave_type=leave_type,
-        start_date=start_date,
-        end_date=end_date,
-        reason=reason
-    )
+    leave_req = LeaveRequest()
+    leave_req.user_id = user.id
+    leave_req.leave_type = leave_type
+    leave_req.start_date = start_date
+    leave_req.end_date = end_date
+    leave_req.reason = reason
+    
     db.session.add(leave_req)
     db.session.commit()
     
-    flash('Leave request submitted successfully!', 'success')
+    flash('Verlofaanvraag succesvol ingediend!', 'success')
     return redirect(url_for('leave_request'))

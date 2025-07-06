@@ -25,7 +25,7 @@ class User(UserMixin, db.Model):
     created_tasks = db.relationship('Task', backref='creator', lazy=True, foreign_keys='Task.created_by')
     time_entries = db.relationship('TimeEntry', backref='user', lazy=True)
     sent_messages = db.relationship('Message', backref='sender', lazy=True, foreign_keys='Message.sender_id')
-    leave_requests = db.relationship('LeaveRequest', backref='user', lazy=True)
+    leave_requests = db.relationship('LeaveRequest', backref='user', lazy=True, foreign_keys='LeaveRequest.user_id')
     
     def get_full_name(self):
         if self.first_name and self.last_name:
@@ -100,3 +100,6 @@ class LeaveRequest(db.Model):
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationships with explicit foreign keys
+    approver = db.relationship('User', foreign_keys=[approved_by], backref='approved_leave_requests')
