@@ -12,7 +12,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h1 class="display-6 fw-bold mb-2">Welkom terug, {{ current_user.get_full_name() or current_user.first_name or 'Collega' }}!</h1>
-                            <p class="lead mb-0">Hier is je overzicht voor vandaag, {{ today.strftime('%A %d %B %Y') }}</p>
+                            <p class="lead mb-0">Hier is je overzicht voor vandaag, {{ today.strftime('%d-%m-%Y') }}</p>
                         </div>
                         <div class="col-md-4 text-end">
                             <div class="d-flex flex-column align-items-end">

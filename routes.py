@@ -60,6 +60,7 @@ def dashboard():
             is_on_break = True
     
     return render_template('dashboard.html', 
+                         today=today,
                          today_tasks=today_tasks,
                          recent_messages=recent_messages,
                          is_clocked_in=is_clocked_in,
