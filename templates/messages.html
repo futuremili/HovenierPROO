@@ -1,17 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Messages - LandscapePro{% endblock %}
+{% block title %}Berichten - HovenierPro{% endblock %}
 
 {% block content %}
 <div class="container my-4">
     <!-- Header -->
     <div class="row mb-4">
-        <div class="col-12">
+        <div class="col-md-8">
             <h2 class="fw-bold">
                 <i data-feather="message-circle" class="me-2"></i>
-                Team Messages
+                Team Berichten
             </h2>
-            <p class="text-muted">Stay updated with team announcements and communications</p>
+            <p class="text-muted">Blijf op de hoogte van team aankondigingen en communicatie</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if current_user.role in ['supervisor', 'manager'] %}
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMessageModal">
+                <i data-feather="plus" class="me-1"></i>
+                Nieuw Bericht
+            </button>
+            {% endif %}
         </div>
     </div>
 
@@ -36,11 +44,11 @@
                                             </span>
                                         {% elif message.message_type == 'announcement' %}
                                             <span class="badge bg-info">
-                                                <i data-feather="megaphone" class="me-1" style="width: 12px; height: 12px;"></i>
-                                                Announcement
+                                                <i data-feather="bell" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                Aankondiging
                                             </span>
                                         {% else %}
-                                            <span class="badge bg-secondary">General</span>
+                                            <span class="badge bg-secondary">Algemeen</span>
                                         {% endif %}
                                     </div>
                                     
@@ -61,10 +69,25 @@
                                         
                                         <small>
                                             <strong>{{ message.sender.get_full_name() }}</strong>
-                                            • {{ message.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            • {{ message.created_at.strftime('%d-%m-%Y om %H:%M') }}
                                         </small>
                                     </div>
                                 </div>
+                                {% if current_user.role in ['supervisor', 'manager'] or message.sender_id == current_user.id %}
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                        <i data-feather="more-horizontal"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <button class="dropdown-item text-danger" onclick="deleteMessage({{ message.id }})">
+                                                <i data-feather="trash-2" class="me-2"></i>
+                                                Verwijder Bericht
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -73,12 +96,109 @@
                 <div class="card">
                     <div class="card-body text-center py-5">
                         <i data-feather="inbox" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
-                        <h5 class="text-muted">No messages yet</h5>
-                        <p class="text-muted">Check back later for team announcements and updates.</p>
+                        <h5 class="text-muted">Nog geen berichten</h5>
+                        <p class="text-muted">Kom later terug voor team aankondigingen en updates.</p>
                     </div>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Add Message Modal -->
+{% if current_user.role in ['supervisor', 'manager'] %}
+<div class="modal fade" id="addMessageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="message-circle" class="me-2"></i>
+                    Nieuw Team Bericht
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addMessageForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="messageSubject" class="form-label">Onderwerp</label>
+                        <input type="text" class="form-control" id="messageSubject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="messageContent" class="form-label">Bericht</label>
+                        <textarea class="form-control" id="messageContent" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="messageType" class="form-label">Type</label>
+                        <select class="form-select" id="messageType">
+                            <option value="general">Algemeen</option>
+                            <option value="announcement">Aankondiging</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="send" class="me-1"></i>
+                        Verstuur Bericht
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Add message functionality
+document.getElementById('addMessageForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('subject', document.getElementById('messageSubject').value);
+    formData.append('content', document.getElementById('messageContent').value);
+    formData.append('message_type', document.getElementById('messageType').value);
+    
+    fetch('/messages/add', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal and refresh page
+            bootstrap.Modal.getInstance(document.getElementById('addMessageModal')).hide();
+            location.reload();
+        } else {
+            alert(data.message || 'Er is een fout opgetreden.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Er is een fout opgetreden bij het versturen van het bericht.');
+    });
+});
+
+// Delete message functionality
+function deleteMessage(messageId) {
+    if (confirm('Weet je zeker dat je dit bericht wilt verwijderen?')) {
+        fetch(`/messages/${messageId}/delete`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Er is een fout opgetreden.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Er is een fout opgetreden bij het verwijderen van het bericht.');
+        });
+    }
+}
+</script>
+
 {% endblock %}

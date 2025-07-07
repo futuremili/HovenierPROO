@@ -241,6 +241,77 @@ def messages():
     messages = Message.query.order_by(Message.created_at.desc()).all()
     return render_template('messages.html', messages=messages)
 
+@app.route('/messages/add', methods=['POST'])
+@require_login
+def add_message():
+    try:
+        # Check if user has permission to add messages
+        if current_user.role not in ['supervisor', 'manager']:
+            return jsonify({
+                'success': False,
+                'message': 'Je hebt geen toestemming om berichten toe te voegen.'
+            })
+        
+        subject = request.form.get('subject')
+        content = request.form.get('content')
+        message_type = request.form.get('message_type', 'general')
+        
+        if not subject or not content:
+            return jsonify({
+                'success': False,
+                'message': 'Onderwerp en bericht zijn verplicht.'
+            })
+        
+        # Create new message
+        message = Message()
+        message.sender_id = current_user.id
+        message.subject = subject
+        message.content = content
+        message.message_type = message_type
+        
+        db.session.add(message)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Bericht succesvol verstuurd!'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error adding message: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Er is een fout opgetreden bij het versturen van het bericht.'
+        })
+
+@app.route('/messages/<int:message_id>/delete', methods=['POST'])
+@require_login
+def delete_message(message_id):
+    try:
+        message = Message.query.get_or_404(message_id)
+        
+        # Check if user has permission to delete this message
+        if current_user.role not in ['supervisor', 'manager'] and message.sender_id != current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Je hebt geen toestemming om dit bericht te verwijderen.'
+            })
+        
+        db.session.delete(message)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Bericht succesvol verwijderd!'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error deleting message {message_id}: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Er is een fout opgetreden bij het verwijderen van het bericht.'
+        })
+
 @app.route('/time-tracking')
 @require_login
 def time_tracking():
